@@ -1,0 +1,168 @@
+<!DOCTYPE html> 
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Solar System VR</title>
+    <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+    <script src="https://cdn.aframe.io/event-set-component.min.js"></script>
+  </head>
+  <body>
+    <a-scene>
+      <!--Camera movement controler-->
+      <a-entity movement-controls="speed: 0.2"> 
+        <a-camera position="0 2 10" look-controls>
+          <a-cursor
+            color="white"
+            scale="2 2 2"
+            animation__click="property: scale; startEvents: click; from: 2 2 2; to: 3 3 3; dur: 150"
+          ></a-cursor>
+        </a-camera>
+      </a-entity>
+      
+      <!-- Background -->
+      <a-sky
+        material="src: https://cdn.glitch.global/28b515ab-9a85-4e4c-a332-5804f0254b5a/Space-Background.jpg?v=1731978655097"
+        animation="property: rotation; to: 0 360 0; loop: true; dur: 300000"
+      ></a-sky>
+      
+      <!-- Sun -->
+      <a-sphere
+        id="sun"
+        position="0 1 -5"
+        radius="1.5"
+        material="src: https://cdn.glitch.global/28b515ab-9a85-4e4c-a332-5804f0254b5a/Agni-Baume-land.jpg?v=1731980212474; emissive: #FFD700; emissiveIntensity: 0.8; roughness: 0.5; metalness: 0.2"
+        animation="property: rotation; to: 0 360 0; loop: true; dur: 80000"
+      >  
+        <!--Sun lighting-->
+        <a-light
+          type="point"
+          position="0 0 0"
+          intensity="10.0"
+          color="#FFF"
+        ></a-light>
+      </a-sphere>
+
+      <!-- Earth track -->
+      <a-entity id="earth-orbit" position="0 1 -5">
+        <!-- Earth -->
+        <a-sphere
+          id="earth"
+          position="4 0 0"
+          radius="0.5"
+          material="src: https://cdn.glitch.global/28b515ab-9a85-4e4c-a332-5804f0254b5a/0_Tierra1.jpg?v=1731975779263; repeat: 1 1; metalness: 0.8"
+          animation="property: rotation; to: 0 360 0; loop: true; dur: 10000"
+        >
+        <!-- Moon -->
+          <a-sphere
+          id="moon"
+          position="3 0 0"
+          radius="0.26d"
+          material="src: https://cdn.glitch.global/ec4e0e19-cbda-4e7c-9c68-e087915eff7d/18871733001275_.pic.jpg?v=1733022715393; opacity: 1; transparent: true; roughness: 1; metalness: 1; repeat: 1 1; normalScale: -1 1; offset: 0 0;"
+          ></a-sphere>
+        </a-sphere> 
+      </a-entity>
+
+
+      <!-- Mars track -->
+      <a-entity id="mars-orbit" position="0 1 -5">
+        <!-- Mars -->
+        <a-sphere
+          id="mars"
+          position="6 0 0"
+          radius="0.7"
+          material="src: https://cdn.glitch.global/28b515ab-9a85-4e4c-a332-5804f0254b5a/Diffuse_2K.png?v=1731977029989; roughness: 1; metalness: 0.8; repeat: 1 1; offset: 0 0; normalScale: -1 1"
+          animation="property: rotation; to: 0 360 0; loop: true; dur: 12500"
+        ></a-sphere>
+      </a-entity>
+
+      <!-- Ambient lighting -->
+      <a-light type="ambient" color="#999"></a-light>
+
+      <!-- Information board -->
+      <a-entity id="info-panel" position="0 4 5" visible="false">
+        <a-plane width="5" height="2" color="#f8f8f8" opacity="0.5"></a-plane>
+        <!-- Text -->
+        <a-text
+          id="info-text"
+          value=""
+          align="center"
+          color="#ffcc00"
+          position="0 0 0.1"
+          wrap-count="30"
+        ></a-text>
+      </a-entity>
+    </a-scene>
+
+    <script>
+      // Dynamically update planet orbits
+      const earthOrbit = document.querySelector("#earth-orbit");
+      const marsOrbit = document.querySelector("#mars-orbit");
+      const infoPanel = document.querySelector("#info-panel");
+      const infoText = document.querySelector("#info-text");
+
+      function animateOrbit(entity, speed, radius) {
+        let angle = 0;
+        setInterval(() => {
+          angle += speed;
+          const radians = angle * (Math.PI / 180);
+          const x = Math.cos(radians) * radius;
+          const z = Math.sin(radians) * radius;
+          entity.children[0].setAttribute("position", `${x} 0 ${z}`);
+        }, 50);
+      }
+
+      animateOrbit(earthOrbit, 1, 10); // Earth's orbit: Radius 10, speed 1 degree/frame
+      animateOrbit(marsOrbit, 0.5, 18); // Mars's orbit: Radius 15, speed 0.5 degree/frame
+
+      // Information showing function
+      function showInfo(text) {
+        infoText.setAttribute("value", text);
+        infoPanel.setAttribute("visible", true);
+
+        // Hide after 8s
+        setTimeout(() => {
+          infoPanel.setAttribute("visible", false);
+        }, 8000);
+      }
+      // Scaling function when click
+      function scalePanel(id) {
+        const panel = document.querySelector(`#${id}`);
+        if (!panel) {
+          console.error(`Element with id "${id}" not found!`);
+          return;
+        }
+        panel.setAttribute("scale", "2 2 2");
+
+        // Hide after 0.5s
+        setTimeout(() => {
+          panel.setAttribute("scale", "1.5 1.5 1.5");
+        }, 500);
+      }
+
+      // Click interaction
+      document.addEventListener("click", (event) => {
+        const clickedElement = event.target;
+        if (!clickedElement) return;
+        if (clickedElement.id === "sun") {
+          showInfo("The Sun releases enough energy every second to power human civilization for 500,000 years!");
+          scalePanel(clickedElement.id);
+        }
+        if (clickedElement.id === "earth") {
+          showInfo(
+            "Earth is the only planet in the solar system with liquid water on its surface, covering approximately 70% of it."
+          );
+          scalePanel(clickedElement.id);
+        }
+        if (clickedElement.id === "mars") {
+          showInfo("Olympus Mons (IAU, 1973) on Mars is the tallest mountain in the solar system, standing at 21.9 kilometers high!");
+          scalePanel(clickedElement.id);
+        }
+        if (clickedElement.id === "moon") {
+          showInfo("The Moon is moving away from Earth! It drifts about 3.8 centimeters farther from Earth each year.");
+          scalePanel(clickedElement.id);
+        }
+      });
+    </script>
+  </body>
+</html>
